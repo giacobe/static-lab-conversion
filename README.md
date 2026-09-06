@@ -1,58 +1,39 @@
 # Cybersecurity Lab Conversion
 
-This repository contains a reusable workflow for converting existing cybersecurity laboratory instructions into complete, reproducible, assessed instructional labs.
+This repository contains a reusable workflow for converting cybersecurity laboratory material into complete, reproducible, assessed instructional labs.
 
-The source material may come from any provider or format, including:
+## Governing principle
 
-- published cybersecurity labs;
-- instructor-authored exercises;
-- textbook activities;
-- container- or VM-based labs;
-- capture-the-flag tasks;
-- programming assignments;
-- systems-security exercises;
-- scripts, notes, or configuration files.
+The conversion must preserve the source lab's security concepts while making infrastructure, role boundaries, artifact ownership, mutable state, automation, evidence, assessment, testing, and release status explicit.
 
-The conversion process preserves the source lab's important security concepts while making its hidden infrastructure, role boundaries, artifact ownership, automation, evidence, assessment, and release requirements explicit.
+Markdown files are editable authoring sources. PDFs are controlled distribution artifacts. A conversion is not complete when only Markdown sources exist.
 
-## What this repository produces
+## Required final deliverables
 
-A completed conversion should include:
+Every conversion must maintain a deliverable matrix mapping each editable source to its required distribution form, repository path, and validation status.
 
-- source-lab analysis;
-- design brief and scope decision;
-- topology and role specification;
-- artifact and mutable-state ownership model;
-- student workflow;
-- automation boundaries;
-- provision, preflight, validation, and reset scripts;
-- student-facing Markdown instructions;
-- student-facing PDF instructions;
-- instructor guide, answer key, troubleshooting guide, and test report;
-- Canvas-ready assignment and rubric materials;
-- machine-readable rubric data;
-- release notes and checksums.
+| Source artifact | Required distribution form | Required path | Validation |
+|---|---|---|---|
+| `student-manual.md` | Markdown and PDF | `student/`, `output/` | PDF matches Markdown in tasks, commands, evidence, version, and lab ID |
+| `vmware-setup.md` or equivalent host setup guide | Markdown and PDF | `student/`, `output/` | Clean student-path setup test |
+| `instructor-guide.md` | Markdown and PDF | `instructor/`, `output/` | Instructor review |
+| `answer-key.md` | Markdown and PDF | `instructor/`, `output/` | Answer review |
+| `troubleshooting.md` | Markdown and PDF | `instructor/`, `output/` | Failure-path review |
+| `test-report.md` | Markdown and PDF | `instructor/`, `output/` | Test status and blockers reviewed |
+| `rubric.md` | Markdown and PDF | `rubric/`, `output/` | Points, modes, and criteria validated |
+| `rubric.csv` | CSV | `rubric/`, `output/` | Schema, row count, IDs, modes, and points validated |
+| Canvas rubric representation | Tested target format | `canvas/` | Tested in a disposable Canvas assignment |
+| `topology.mmd` | Mermaid source and rendered image | `design/`, `output/` | Source parses and rendered topology reviewed |
+| Release notes | Markdown | `release/` | Version, gates, limitations, and included files checked |
+| Checksums | SHA-256 text | `release/` | Recomputed after packaging |
 
-The Markdown files are the editable sources. PDFs are controlled distribution artifacts. Rubric CSV and JSON files are structured representations and should not be assumed to be directly importable into Canvas without testing.
-
-## Methodology
-
-The governing workflow is documented in:
-
-```text
-cybersecurity-lab-conversion-methodology.md
-```
-
-Use that document as the primary context when starting a new conversion in a fresh AI session or when asking a collaborator to extend this repository.
-
-A useful bootstrap instruction is:
-
-> Use `cybersecurity-lab-conversion-methodology.md` as the governing workflow. Convert the supplied cybersecurity lab material into a complete, role-separated, reproducible instructional package. First analyze the source and produce the design-stage documents. Do not jump directly to final student instructions. Preserve security concepts while replacing unnecessary infrastructure complexity. Produce the required editable sources, PDFs, validation, reset, rubric, Canvas, and release artifacts.
+A release check must fail if any required PDF or validated structured rubric artifact is absent.
 
 ## Repository structure
 
 ```text
 .
+├── README.md
 ├── cybersecurity-lab-conversion-methodology.md
 ├── analysis/
 ├── design/
@@ -68,13 +49,12 @@ A useful bootstrap instruction is:
 ├── validation/
 ├── rubric/
 ├── canvas/
+├── output/
 ├── release/
 └── tests/
 ```
 
-## Required editable outputs
-
-The design phase should produce:
+## Required design-stage outputs
 
 ```text
 analysis/source-lab-analysis.md
@@ -88,16 +68,25 @@ design/automation-boundaries.md
 design/personalization.md       # when applicable
 ```
 
-The instructional and assessment phase should produce:
+`topology.mmd` must be rendered and inspected; source existence alone is insufficient.
+
+## Required instructional and assessment outputs
 
 ```text
 student/student-manual.md
-student/submission-requirements.md
+student/student-manual.pdf
+student/vmware-setup.md       # required when a host hypervisor is used
+student/vmware-setup.pdf
 instructor/instructor-guide.md
+instructor/instructor-guide.pdf
 instructor/answer-key.md
+instructor/answer-key.pdf
 instructor/troubleshooting.md
+instructor/troubleshooting.pdf
 instructor/test-report.md
+instructor/test-report.pdf
 rubric/rubric.md
+rubric/rubric.pdf
 rubric/rubric.csv
 rubric/rubric-canvas.json
 rubric/rubric-check.md
@@ -107,198 +96,129 @@ canvas/rubric-entry.md
 canvas/import-notes.md
 ```
 
-## Release outputs
+The final student distribution must have one authoritative student-facing document containing setup, prerequisites, safety, tasks, evidence, submission, cleanup, reset, and attribution. A separate submission source may exist for authoring, but it must be merged before distribution and must not conflict with the authoritative manual.
 
-A release directory should contain the exact distribution artifacts:
+## Host hypervisor requirement
 
-```text
-release/
-├── <lab-id>-student-instructions.pdf
-├── <lab-id>-student-instructions.md
-├── <lab-id>-instructor-guide.pdf
-├── <lab-id>-rubric.pdf
-├── <lab-id>-rubric.csv
-├── <lab-id>-rubric-canvas.json
-├── checksums.sha256
-└── RELEASE_NOTES.md
-```
+Whenever a lab uses a host hypervisor, the student package must include a dedicated setup document covering:
 
-`RELEASE_NOTES.md` must identify the lab version, supported platform, tested environment, included files, known limitations, reset limitations, Canvas limitations, security warnings, and changes from the previous release.
+- host operating-system prerequisites;
+- supported x86_64 and ARM64 architectures where applicable;
+- VMware Workstation Pro or equivalent Windows instructions;
+- VMware Fusion or equivalent macOS instructions;
+- VM creation, installation, cloning, and unique virtual MAC addresses;
+- adapter connection and power-on settings;
+- NAT and isolated/private network configuration;
+- guest hostname and operating-system configuration;
+- static or dynamic addressing;
+- routing and forwarding requirements;
+- completion checks;
+- troubleshooting and reset guidance.
 
-## Conversion workflow
+## Student-document requirements
 
-### 1. Analyze the source
+The authoritative student manual must include purpose, scenario, objectives, prerequisites, safety, topology, preparation, preflight, numbered tasks, expected observations, required evidence, conceptual questions, troubleshooting, cleanup, reset, submission, and attribution.
 
-Identify the original tasks, learning concepts, assumed infrastructure, artifacts, expected observations, failure modes, and reset assumptions. Decide whether each source phase is retained, modified, combined, made optional, moved elsewhere, or omitted.
+Every student-facing manual must define and consistently use these conventions:
 
-### 2. Expose hidden prerequisites
+- OS commands appear in fenced `console` blocks;
+- a leading `$` is a prompt marker and is not typed;
+- placeholders use an explicit form such as `<LAN_IF>`;
+- the required editor is named explicitly;
+- root-owned files are opened with `sudo nano`;
+- student-owned source files are opened with ordinary `nano`;
+- every file students must create or modify is named explicitly;
+- ownership and privilege requirements are stated;
+- save, confirm, and exit keystrokes are documented;
+- administrative commands are visibly marked;
+- each configuration file is associated with its VM or role.
 
-Document operating systems, packages, privileges, interfaces, routes, services, application state, browser state, trust stores, databases, kernel capabilities, shared storage, and reset mechanisms that the source provides implicitly.
+A document review or lint check must detect the required command-box convention and identify all student-modified files.
 
-### 3. Compare versions or implementations
+## Topology validation
 
-Use older versions to understand the original learning arc and newer versions to identify technical improvements. Preserve improvements that support learning, but do not automatically preserve a containerized or otherwise opaque deployment architecture.
-
-### 4. Select the architecture
-
-Choose the smallest topology that makes the security concept visible. Use distinct VMs, interfaces, accounts, processes, or logical roles when trust boundaries, routing, ownership, or attacker/defender separation matter.
-
-### 5. Define ownership and movement
-
-For each security-relevant artifact and mutable state item, specify its origin, owner, permitted movement, integrity check, secret status, and reset behavior.
-
-### 6. Define the learning lifecycle
-
-Describe what students create, transfer, configure, observe, deliberately break, defend, validate, and reset. A good lab is an experiment with an observable before/after result, not merely a command checklist.
-
-### 7. Scope and personalize
-
-Retain the smallest coherent lab narrative. Add a meaningful student-specific parameter only when it affects the experiment or improves assessment.
-
-### 8. Automate the right things
-
-Automate repetitive prerequisites and recovery. Leave security-relevant decisions, attack implementation, rule writing, protocol construction, certificate issuance, code changes, and explanations to students when those are the learning objectives.
-
-### 9. Package and test
-
-Produce editable Markdown, rendered PDFs, instructor materials, rubrics, Canvas materials, scripts, and release metadata. Test the complete workflow from a clean environment, including expected failures and reset.
-
-## Script boundaries
-
-Use four script categories:
+Topology validation must verify:
 
 ```text
-scripts/
-├── provision/
-├── preflight/
-├── validate/
-└── reset/
+[ ] topology.mmd exists
+[ ] Mermaid syntax parses
+[ ] rendered topology image exists
+[ ] all required VMs are present
+[ ] all assigned addresses are present
+[ ] roles match the design brief
+[ ] NAT and the experiment network are distinct
+[ ] private-LAN gateway behavior is shown correctly
+[ ] the diagram does not imply unauthorized Internet experimentation
 ```
 
-Provisioning must not silently complete the central student task. Preflight should provide actionable failure messages. Validation should check observable outcomes without replacing explanations. Reset should restore the baseline and document destructive behavior.
+## Rubric requirements
 
-## Student document requirements
-
-`student/student-manual.md` is the authoritative editable source and must include:
-
-- purpose and scenario;
-- learning objectives;
-- prerequisites;
-- safety and isolation warnings;
-- topology and roles;
-- preparation and preflight;
-- numbered tasks;
-- expected observations;
-- required evidence;
-- conceptual questions;
-- troubleshooting;
-- reset and cleanup;
-- submission requirements.
-
-It must not contain instructor answers, hidden grading notes, recovery credentials, or completed solutions where discovery is intended.
-
-The distribution PDF must match the Markdown in task numbering, commands, evidence requirements, version, and lab identifier. Check code blocks, tables, diagrams, page breaks, links, headers, footers, and readability before release.
-
-## Canvas rubric requirements
-
-Provide three synchronized representations:
+Every criterion must declare one scoring mode:
 
 ```text
-rubric/rubric.md
-rubric/rubric.csv
-rubric/rubric-canvas.json
+objective
+qualitative
+hybrid
 ```
 
-Also provide:
+Objective criteria use measurable checks and explicit thresholds. Qualitative criteria use anchored explanations. Hybrid criteria separate observable implementation evidence from interpretation.
 
-```text
-canvas/rubric-entry.md
-canvas/import-notes.md
-rubric/rubric-check.md
-```
+The CSV must contain one row per criterion-rating combination, stable criterion and rating IDs, criterion points, scoring mode, learning-objective mapping, evidence requirement, validation method, rating description, rating points, and grader notes.
 
-The CSV must use stable criterion and rating IDs and include one row per criterion-rating combination. At minimum, include criterion name, description, points, learning-objective mapping, evidence requirement, validation method, rating name, rating description, rating points, and grader notes.
+The rubric validator must fail on:
 
-`canvas/rubric-entry.md` must be copy-ready for manual Canvas entry. `canvas/import-notes.md` must document the actual tested Canvas process and must not claim generic CSV or JSON import compatibility without evidence.
+1. malformed rows or unexpected column counts;
+2. missing or duplicate criterion IDs;
+3. missing or duplicate rating IDs;
+4. incorrect rating counts;
+5. nonnumeric points;
+6. rating points greater than criterion points;
+7. criterion totals that do not equal the assignment total;
+8. hybrid component totals that do not equal criterion totals;
+9. disagreement among Markdown, CSV, JSON, Canvas, and assignment points;
+10. objective criteria using unanchored qualitative language;
+11. qualitative criteria lacking explanation anchors;
+12. missing evidence or validation mappings.
 
-The rubric check must verify:
+At minimum:
 
 ```text
 sum(criteria.points) = assignment.total_points
 ```
 
-It must also check IDs, rating counts, evidence mappings, and consistency across all rubric representations.
+Validation errors must identify the exact file, row, criterion ID, and field.
 
-## Quality gates
+## Canvas requirements
 
-### Design gate
+Select one canonical Canvas workflow before implementation: manual entry, institution-specific import, API payload, QTI, or another tested format. Test it in a disposable assignment before release.
 
-Do not implement until source analysis, design brief, topology, ownership model, scope decision, student workflow, automation boundaries, evidence plan, and rubric outline exist.
+`canvas/import-notes.md` must describe the tested workflow and must not claim generic CSV or JSON import compatibility without evidence. If manual entry is required, label the artifact clearly as manual-entry guidance rather than a direct import file.
 
-### Implementation gate
+## Script boundaries
 
-Do not distribute until provisioning works from a clean environment, preflight detects missing prerequisites, validation detects expected success and failure states, reset restores the baseline, and documents match tested behavior.
+Provisioning may install prerequisites and create the workspace but must not complete the central student task. Preflight must provide actionable failure messages. Validation must check observable outcomes without replacing explanations. Reset must restore the baseline and document destructive behavior.
 
-### Classroom-readiness gate
+## Release gates
 
-Before release:
+A package may not be called final or classroom-approved until all required gates pass:
 
-- an independent tester follows the student instructions;
-- undocumented prerequisites are removed or documented;
-- intended failures are distinguishable from infrastructure failures;
-- the Markdown and PDF agree;
-- the PDF has been visually inspected;
-- Canvas entry or import is tested in the target environment;
-- private keys, credentials, cookies, and instructor-only content are absent;
-- release files are checksummed.
+- design review;
+- clean-environment provisioning;
+- actionable preflight;
+- observable validation success and failure checks;
+- reset testing;
+- PDF generation and visual inspection;
+- Markdown/PDF consistency review;
+- rubric schema and cross-representation validation;
+- Canvas workflow testing;
+- independent student-path testing;
+- platform and architecture testing required by the design;
+- security and privacy review;
+- checksums generated after packaging.
 
-## Versioning
+Each release must include a machine-readable status record identifying passed, pending, and failed gates.
 
-Use a stable lab identifier, such as:
+## Versioning and release
 
-```text
-firewall-exploration
-packet-sniffing-spoofing
-sql-injection
-csrf
-xss
-vpn-tunneling
-```
+Use semantic versions and include the lab ID and version in source documents, PDFs, rubrics, test reports, and release notes. Release notes must identify supported platforms, tested environments, included files, known limitations, reset limitations, Canvas limitations, security warnings, and changes from the previous release.
 
-Use semantic versions:
-
-- major: changed topology, learning workflow, or assessment;
-- minor: added task, platform support, or significant documentation;
-- patch: wording, typo, or nonfunctional correction.
-
-Include the version in source documents, PDFs, rubrics, test reports, and release notes.
-
-## Security and privacy
-
-All converted labs must clearly define:
-
-- network isolation requirements;
-- acceptable-use boundaries;
-- whether Internet access is permitted;
-- credentials used only for the lab;
-- secrets and private artifacts that must not be submitted;
-- cleanup requirements;
-- whether the lab may affect systems outside the isolated environment.
-
-Use intentionally local or reserved names and addresses when appropriate. Do not direct students to attack public systems.
-
-## Starting a new conversion
-
-Provide the assistant or collaborator with:
-
-1. the source instructions, files, URLs, or repository;
-2. the target course and audience;
-3. the desired platform and resource limits;
-4. the intended duration;
-5. the topics to retain and omit;
-6. grading and evidence requirements;
-7. personalization requirements;
-8. Canvas constraints;
-9. any existing repository conventions.
-
-Then request the design-stage outputs first. Review those outputs before requesting scripts, student instructions, PDFs, rubrics, or release files.
